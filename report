@@ -1,0 +1,14 @@
+introduction
+
+importance of BGP in the internet
+
+Problems with BGP
+	-prefix hijacking 
+	
+	-Attacks on TCP:
+		eavesdropping to learn routing information (not a BGP specific attack)
+		MITM (attacks against integrity
+			inserting, modifying deleting messages, replay attack
+		DoS attack against TCP 
+			(sending RST, SYN-Flood, backhoe attack (cutting a link)
+	-	
