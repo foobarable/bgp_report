@@ -11,4 +11,58 @@ Problems with BGP
 			inserting, modifying deleting messages, replay attack
 		DoS attack against TCP 
 			(sending RST, SYN-Flood, backhoe attack (cutting a link)
-	-	
+	-Attack on the routing policy using the BGP route attributes
+		Exploiting as path length and MED to manipulate route selection by an AS
+
+
+
+BGP security today: 
+	target:	byzantine robustness
+	Currently used: Protection of the TCP connection and defensive filtering
+	
+%Cryptographig techniques: 
+%	Pairwise keying
+%	Cryptographic hash functions
+%	MACs
+%	Diffie-Hellmann
+%	PKI
+%	Certificates	
+
+
+Protection of a BGP Session between routers
+	2 goals: Protecting TCP and BGP session itself
+		Proposed solutions:
+			MD5 integrity: Utilize TCP extension that uses a MAC based on MD5
+					-> Protects integrity and prevents replay attacks
+
+			Session and Message Protection:
+				5 Proposed countermeasures:
+					Adding sequence numbers
+					Encryption of all BGP data between peers (shared secret)
+					
+					Adding UPDATE sequence numbers/timestamp
+					New path attribute: PREDECESSOR: identification of last AS before destination
+					digital signatures of all UPDATE fields
+				Disadvantages: BGP needs to be altered
+					       Based on shared secrets => hard to manage
+			Hop Integrity Protocols:
+				Peers can detect modification or replay attacks	
+				Implemented by using sequence numbers, MACs and a PKI to refresh key
+
+			Generalized TTL Security Mechanism
+				Utilizing IP TTL to discard every packet with TTL < MAX-1. 
+				
+				=> Weakly defends against remote attacker, but not against malicious information coming from adjacent peers
+				=> Also, useless in multihop environments
+				
+			IPsec
+				Use IPsec to secure BGP at IP layer 
+				IKE for key management, AH and ESP for packet level security
+				Typically used to secure messages between peers
+				Provides: authenticy, integrity, replay prevention, confidentality
+			
+				
+				
+				
+			
+			
