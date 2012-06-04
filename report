@@ -59,10 +59,19 @@ Protection of a BGP Session between routers
 				Use IPsec to secure BGP at IP layer 
 				IKE for key management, AH and ESP for packet level security
 				Typically used to secure messages between peers
-				Provides: authenticy, integrity, replay prevention, confidentality
+				Provides: authenticy, integrity, replay prevention, confidentality, DOS prevention
 			
+
+
+Defensive Filtering of suspicious BGP anouncments
+	Goal: Filter bad and potential malicious announcmentce 
+	Usually ingress and egress filtering based on route policies like:
+			prefixes with special uses
+			bogons/martians (advertisements of adress blocks and AS numbers with no matching allocation data)
+				=> filtering using an updated list of bogons
+			filter out private AS numbers
+			too long AS-Pathes
+			routes to small soubnets (snm > 24) 
+			hard limit of announcments by a neighbour 
+			filtering by customer policies
 				
-				
-				
-			
-			
