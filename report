@@ -20,58 +20,109 @@ BGP security today:
 	target:	byzantine robustness
 	Currently used: Protection of the TCP connection and defensive filtering
 	
-%Cryptographig techniques: 
-%	Pairwise keying
-%	Cryptographic hash functions
-%	MACs
-%	Diffie-Hellmann
-%	PKI
-%	Certificates	
+
+	% Just mention those techniques in 1-2 sentences each
+	%Cryptographig techniques: 
+	%	Pairwise keying
+	%	Cryptographic hash functions
+	%	MACs
+	%	Diffie-Hellmann
+	%	PKI
+	%	Certificates	
 
 
-Protection of a BGP Session between routers
-	2 goals: Protecting TCP and BGP session itself
-		Proposed solutions:
-			MD5 integrity: Utilize TCP extension that uses a MAC based on MD5
-					-> Protects integrity and prevents replay attacks
+	Protection of a BGP Session between routers
+		2 goals: Protecting TCP and BGP session itself
+			Proposed solutions:
+				MD5 integrity: Utilize TCP extension that uses a MAC based on MD5
+						-> Protects integrity and prevents replay attacks
 
-			Session and Message Protection:
-				5 Proposed countermeasures:
-					Adding sequence numbers
-					Encryption of all BGP data between peers (shared secret)
+				Session and Message Protection:
+					5 Proposed countermeasures:
+						Adding sequence numbers
+						Encryption of all BGP data between peers (shared secret)
+						
+						Adding UPDATE sequence numbers/timestamp
+						New path attribute: PREDECESSOR: identification of last AS before destination
+						digital signatures of all UPDATE fields
+					Disadvantages: BGP needs to be altered
+						       Based on shared secrets => hard to manage huge number of keypairs
+				Hop Integrity Protocols:
+					Peers can detect modification or replay attacks	
+					Implemented by using sequence numbers, MACs and a PKI to refresh key
+
+				Generalized TTL Security Mechanism
+					Utilizing IP TTL to discard every packet with TTL < MAX-1. 
 					
-					Adding UPDATE sequence numbers/timestamp
-					New path attribute: PREDECESSOR: identification of last AS before destination
-					digital signatures of all UPDATE fields
-				Disadvantages: BGP needs to be altered
-					       Based on shared secrets => hard to manage
-			Hop Integrity Protocols:
-				Peers can detect modification or replay attacks	
-				Implemented by using sequence numbers, MACs and a PKI to refresh key
+					=> Weakly defends against remote attacker, but not against malicious information coming from adjacent peers
+					=> Also, useless in multihop environments
+					
+				IPsec
+					Use IPsec to secure BGP at IP layer 
+					IKE for key management, AH and ESP for packet level security
+					Typically used to secure messages between peers
+					Provides: authenticy, integrity, replay prevention, confidentality, DOS prevention
+				
 
-			Generalized TTL Security Mechanism
-				Utilizing IP TTL to discard every packet with TTL < MAX-1. 
-				
-				=> Weakly defends against remote attacker, but not against malicious information coming from adjacent peers
-				=> Also, useless in multihop environments
-				
-			IPsec
-				Use IPsec to secure BGP at IP layer 
-				IKE for key management, AH and ESP for packet level security
-				Typically used to secure messages between peers
-				Provides: authenticy, integrity, replay prevention, confidentality, DOS prevention
+
+	Defensive Filtering of suspicious BGP anouncments
+		Goal: Filter bad and potential malicious announcmentce 
+		Usually ingress and egress filtering based on route policies like:
+				prefixes with special uses
+				bogons/martians (advertisements of adress blocks and AS numbers with no matching allocation data)
+					=> filtering using an updated list of bogons
+				filter out private AS numbers
+				too long AS-Pathes
+				routes to small soubnets (snm > 24) 
+				hard limit of announcments by a neighbour 
+				filtering by customer policies
+				Rewrite of BGP attributes
+
+		=> Filtering works basically well in practise but can not replace a strong security architecture
+
+
+
+	Routing Registries
+		Approach: Beeing able to have a global view on correct routes makes it easy to detect attacks
+		This could be achieved by creaint a routing registry that stores the following attributes:
+			prefix ownership
+			Connectivity between ASes
+			routing policies
 			
-
-
-Defensive Filtering of suspicious BGP anouncments
-	Goal: Filter bad and potential malicious announcmentce 
-	Usually ingress and egress filtering based on route policies like:
-			prefixes with special uses
-			bogons/martians (advertisements of adress blocks and AS numbers with no matching allocation data)
-				=> filtering using an updated list of bogons
-			filter out private AS numbers
-			too long AS-Pathes
-			routes to small soubnets (snm > 24) 
-			hard limit of announcments by a neighbour 
-			filtering by customer policies
+		Problems: 
+			Such a registry has to be accurate, complete and secure
+			Routing information sometimes intendet not to be public available
+			Full trust on registry (SPoF)
+			Information may become outdated due to lazy update policies
+			
+	
+	
+	%Securing router managment
+	%	Protection against physical attacks, SNMP attacks, DoS Attacks
+	%       => Basic security, won't mention
+			
 				
+	All of those described solutions are not sufficient for the protection of BGP
+
+BGP Security Solutions
+
+	Complete BGP Security architectures:
+	
+		S-BGP 
+			Validates Path attributes in BGP-Update by utilizing a PKI
+			Data like adress ownership, peer AS identiy, control messages, policy attributes and path vectors can be digitally signed and verified
+			The ownership of a prefix is checked by an out of band mechanism called Adress attestations by the validation of a delegation chain (similar to x509 PKI)
+			Route attestations happen within BGP by appending a new attribute to the BGP UPDATE mesage. Each AS in the AS path signs prior signatures.
+			Problems: 
+				Huge amount of data that needs to be processed and number of possible signers makes this solution computational expensive
+				
+				
+				
+		Secure Origin BGP
+				
+		
+
+
+
+
+	
