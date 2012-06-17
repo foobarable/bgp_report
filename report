@@ -1,3 +1,6 @@
+Abstract
+
+
 introduction
 
 importance of BGP in the internet
@@ -120,9 +123,20 @@ BGP Security Solutions
 				
 		Secure Origin BGP
 				
+		Interdomain Route Validation
 		
 
+	Experimental systems:
+		Just mention those and describe basically what they aim at
+	
 
 
+
+Comparision of approaches. Mention difficulties in deployment and costs.
+	
+
+Conclusion
+
+Summary
 
 	

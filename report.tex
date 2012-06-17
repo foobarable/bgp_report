@@ -1,4 +1,4 @@
-\documentclass[]{IEEEtran}
+\documentclass[12pt]{IEEEtran}
 
 \author{Ralph Krimmel}
 \title{An overview of current BGP security problems}
@@ -9,36 +9,50 @@
 	\begin{abstract}
 	\end{abstract}
 	\section{Introduction}
-	Communication in today's internet is possible by the interplay of many protocols that care for 
+	Communication in today's internet is possible by the interplay of many protocols. On the so called internet layer the Internet Protocol \emph{IP} is the primary protocol that is used to forward network packets (datagrams) to the respective target hosts or network. 
+	IP networks are grouped as autonomous systems, \emph{AS}, networks under control of one organization. 
+	The routing inside or between networks is done by every host that speaks IP, but most importantly by special hosts, called routers. 
+	A router has to decide which will be the next hop the datagram has to be moved to. 
+	This can either be inside or between autonomous systems. 
+	To perform this decision, routers make use of additional protocols which are classified as intradomain routing protocols for routing in, and interdomain routing protocols for routing between ASes. 
+	The prevalent interdomain routing protocol is BGP, the \emph{Border Gateway Protocol}. 
+	In practise BGP works basically well but the lack of security mechanisms and performance guarantees makes it vulnerable against attacks or configuration mistakes. 
+	There have been a few incidents in the past where misconfigured routers reduced the functionality of bigger parts of the internet. 
+	With manipulated BGP messages, even more harm could be caused if those messages are intelligently sent to specific and important targets. 
+	Therefore it is still highly important to research methods to make BGP secure, performant and reliable. 
+	\section{The Border Gateway Protocol}
+	The Border gateway protocol is an incremental protocol that enables border routers of adjacent autonomous systems to exchange information on how to reach blocks of IP adresses. 
+	Incremental means, that BGP transfers changes of routes and not complete routing tables in every message. Also BGP has a AS Path attribute to which 
+	each BGP router adds its AS number, the unique number each AS has, to the beginning of the path. This is done to prevent routing loops.
+	
 
 	\subsection{Problems with BGP}
 		\subsubsection{Prefix hijacking}
-%	
-		\subsubsection{Attacks on TCP}
-%		eavesdropping to learn routing information (not a BGP specific attack)
-%		MITM (attacks against integrity
-%			inserting, modifying deleting messages, replay attack
-%		DoS attack against TCP 
-%			(sending RST, SYN-Flood, backhoe attack (cutting a link)
+		
+       	\subsubsection{Attacks on TCP}
+		eavesdropping to learn routing information (not a BGP specific attack)
+		MITM (attacks against integrity
+			inserting, modifying deleting messages, replay attack
+		DoS attack against TCP 
+			(sending RST, SYN-Flood, backhoe attack (cutting a link)
 		\subsubsection{Attack on the routing policy} 
-		%	using the BGP route attributes
-%		Exploiting as path length and MED to manipulate route selection by an AS
-%
-%
-%
-	\section{BGP security today}
-%	target:	byzantine robustness
-%	Currently used: Protection of the TCP connection and defensive filtering
-%	
-%%Cryptographig techniques: 
-%%	Pairwise keying
-%%	Cryptographic hash functions
-%%	MACs
-%%	Diffie-Hellmann
-%%	PKI
-%%	Certificates	
-%
-%
+			using the BGP route attributes
+		Exploiting as path length and MED to manipulate route selection by an AS
+
+
+
+       \section{BGP security today}
+	target:	byzantine robustness
+	Currently used: Protection of the TCP connection and defensive filtering
+	
+%Cryptographig techniques: 
+%	Pairwise keying
+%	Cryptographic hash functions
+%	MACs
+%	Diffie-Hellmann%	PKI
+%	Certificates	
+
+
 	\subsection{Protection of a BGP Session between routers}
 %	2 goals: Protecting TCP and BGP session itself
 %		Proposed solutions:
