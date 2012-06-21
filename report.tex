@@ -85,8 +85,14 @@
 		This behaviour results in a high use of network bandwith in addition to the DoS attack. 
 
 		\subsubsection{Attack on the routing policy} 
-
-		These attacks aim to influence the routers decision which route out of a set of routes should be anounced for a specifoc prefix. This decision depends on the route attributes 
+		
+		These attacks aim to influence the routers decision which route out of a set of routes should be anounced for a specific prefix. This decision depends on the attribute values in UPDATE messages. Routing policies of an AS determine on how those values are chosen. The following attributes are considered when chosing a route:
+		\begin{itemize}
+			\item The local preference attribute is used to prefer specific policies like contracts with customers over shortest-path routing.
+			\item The AS path length is considered when multiple routes have the same local preference. The shorter path is chosen.
+			\item The Origin type determines where the route was learned from. This could be from inside or outside the AS or from another type of source.
+			\item It can occur that two huge 
+		\end{itemize}
 		Exploiting as path length and MED to manipulate route selection by an AS
 
 
