@@ -31,7 +31,7 @@
 	Another important information that is contained in specific BGP messages is the  AS Path attribute. Each BGP router adds its AS number, the unique number each AS has, to the beginning of the path. This is done to prevent routing loops. 
 
 	By advertising routes to other autonomous systems, information on how to reach specific IP prefixes can be distributed automatically without having a global view of the network. On the one hand, this becomes handy when looking at the effort of configuration and maintaing the system. On the other hand this is also a huge security risk.
-	The resulting vulnerabilitiy that results in the potential of \emph{prefix hijacking} and other flaws of BGP that can be attacked will be descripted in the next part of this document. 
+	The resulting vulnerabilitiy that results in the potential of \emph{prefix hijacking} and other flaws of BGP that can be attacked will be descriped in the next part of this document. 
 	
 	\subsection{Security issues of BGP}
 		Most of the security related problems of BGP originate from the nescience of the mapping between autonomous systems and IP prefixes, the use of TCP as Transport protocol and potential to modify route anouncements including the attributes those contain.
@@ -71,7 +71,7 @@
 		Additionally, Man In The Middle attacks on TCP allow Malice to insert, modify and delete messages. 
 		Also packets could be replayed to withdraw valid routes or re-install already withdrawn routes.
 	
-		Another way to affect BGP via TCP is a \emph{Denial-of-Service} attack, which will leave a BGP router unavailable to its users.
+		Another way to affect BGP via TCP is a \emph{Denial-of-Service} attack which will leave a BGP router unavailable to its users.
 		It can be accomplished by the use of various techniques that will be described here briefly:
 		\paragraph{TCP RST}
 		A TCP connection can be closed by sending a TCP packet with either the FIN or RST flag set. 
@@ -94,13 +94,14 @@
 			\item It can occur that two huge have more than peering routers to each other. The MED, Multi-Exit Discriminator determines to which of those locations the data is routed to. 
 		\end{itemize}
 		By tampering around those attributes the route selection by an AS can be manipulated. 
+		For example an AS could simply shorten the AS path length by deleting a few BGP hops in the path.
+
 		%TODO examples?
-
-
-
        \section{BGP security today}
-	target:	byzantine robustness
-	Currently used: Protection of the TCP connection and defensive filtering
+		The target of BGP security research is to reach \emph{Byzantine robustness} of the protocol. That means that all non faulty hosts reach the same descision (agreement) in a finite time period (termination), even if there arey hosts that show faulty behaviour. %cite
+		
+		Current deployed solutions cannot or just partly fulfill those requirements. They focus on the protection of the underlying TCP connection, try to defensively BGP messages and atempt to setup so called routing registries. In practise, some of them improve the security of BGP but they cannot defend the system against more complex attacks. The next section describes the currently used techniques and what can actually be achieved by them. 
+
 	
 %Cryptographig techniques: 
 %	Pairwise keying
@@ -108,24 +109,15 @@
 %	MACs
 %	Diffie-Hellmann%	PKI
 %	Certificates	
-
-
 	\subsection{Protection of a BGP Session between routers}
-	2 goals: Protecting TCP and BGP session itself
-		Proposed solutions:
-			MD5 integrity: Utilize TCP extension that uses a MAC based on MD5
-					-> Protects integrity and prevents replay attacks
+		The methods that are used to protect the communication between two BGP speaking routers aim basically in protecting the underlying layers and improving BGP session security.
+		\paragraph{MD5 integrity} One proposal to increase the security of BGP is to utilize a TCP extension that uses a message authentication code based on MD5, a message digst algorithm. The extension would include a digest of the TCP header and the BGP message.  This protects the integrity of a TCP packet and thus also prevents replay attacks due to the included protection of TCPs sequence numbers. From performance view MD5 is a very cheap algorithm which is  not computational intensive but from security view MD5 is no longer considered as a secure message digest. %cite
 
-			Session and Message Protection:
-				5 Proposed countermeasures:
-					Adding sequence numbers
-					Encryption of all BGP data between peers (shared secret)
-					
-					Adding UPDATE sequence numbers/timestamp
-					New path attribute: PREDECESSOR: identification of last AS before destination
-					digital signatures of all UPDATE fields
-				Disadvantages: BGP needs to be altered
-					       Based on shared secrets => hard to manage
+		\paragraph{Session and Message Protection}
+		The security of a BGP session can be improved by the following countermeasures, proposed by %cite
+		First of all, encrypting BGP data with a secret shared key ensures the confidentiality of the data. Also sequence numbers are proposed to prevent replay attacks and assures the correct order of the packets. Those sequence numbers are somehow 'authenticated' due to the prior encryption. 
+		Additionally, it is proposed that the BGP UPDATE messages are equiped with  sequence numbers or timestamps and a new path attribute, PREDECESSOR is added to an UPDATE message. This would allow the identification of last AS before the destination AS. All of those methods would somehow offer confidentiallity and integrity. The disadvantages are that for this approach BGP needs to be altered. This will make those changes hard to deploy in a large scale. Another drawback is that the encryption is based on shared secrets. The consequence is that for each pair of routers a shared key has to be managed by the administrators which increases the administrative overhead alot.
+					       
 			Hop Integrity Protocols:
 				Peers can detect modification or replay attacks	
 				Implemented by using sequence numbers, MACs and a PKI to refresh key
