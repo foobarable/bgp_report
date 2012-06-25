@@ -18,7 +18,7 @@
 	This can either be inside or between autonomous systems. 
 	To perform this decision, routers make use of additional protocols which are classified as \emph{intradomain routing protocols} for routing in, and \emph{interdomain routing protocols} for routing between ASes. 
 
-	The prevalent interdomain routing protocol is BGP, the \emph{Border Gateway Protocol}, or more specific \emph{Exterior Border Gateway Protocol}. 
+	The prevalent interdomain routing protocol is BGP, the \emph{Border Gateway Protocol}, or more precise \emph{Exterior Border Gateway Protocol}. 
 	In practise BGP works basically well but the lack of security mechanisms and performance guarantees makes it vulnerable against attacks or configuration mistakes. 
 	There have been a few incidents in the past where misconfigured routers reduced the functionality of bigger parts of the internet. 
 	With manipulated BGP messages, even more harm could be caused if those messages are intelligently sent to specific and important targets. 
@@ -118,15 +118,9 @@
 		First of all, encrypting BGP data with a secret shared key ensures the confidentiality of the data. Also sequence numbers are proposed to prevent replay attacks and assures the correct order of the packets. Those sequence numbers are somehow 'authenticated' due to the prior encryption. 
 		Additionally, it is proposed that the BGP UPDATE messages are equiped with  sequence numbers or timestamps and a new path attribute, PREDECESSOR is added to an UPDATE message. This would allow the identification of last AS before the destination AS. All of those methods would somehow offer confidentiallity and integrity. The disadvantages are that for this approach BGP needs to be altered. This will make those changes hard to deploy in a large scale. Another drawback is that the encryption is based on shared secrets. The consequence is that for each pair of routers a shared key has to be managed by the administrators which increases the administrative overhead alot.
 					       
-			Hop Integrity Protocols:
-				Peers can detect modification or replay attacks	
-				Implemented by using sequence numbers, MACs and a PKI to refresh key
 
-			Generalized TTL Security Mechanism
-				Utilizing IP TTL to discard every packet with TTL < MAX-1. 
-				
-				=> Weakly defends against remote attacker, but not against malicious information coming from adjacent peers
-				=> Also, useless in multihop environments
+		\paragraph{Generalized TTL Security Mechanism}
+		This approach utilizes  IP header field \emph{Time to live} that determines how many hops an IP packet will be valid before it will be dropped by a router. The idea behind this method is to just accept packets with a TTL value bigger or equal of the maximum TTL value minus one. This assures that every packet originates just one hop away from the router and defends against remote attackers. The procudure does not protect against malicious information in BGP messages coming from adjacent peers. It is also less usefull in multihop environments, meaning that between adjacent BGP routers no physical connection exists.
 				
 			IPsec
 				Use IPsec to secure BGP at IP layer 
