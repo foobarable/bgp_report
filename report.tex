@@ -1,6 +1,6 @@
 \documentclass[12pt,a4paper]{IEEEtran}
 \usepackage{graphicx}
-
+\usepackage{booktabs}
 \author{Ralph Krimmel}
 \title{An overview of current BGP security problems}
 
@@ -8,6 +8,7 @@
 \begin{document}
 	\maketitle
 	\begin{abstract}
+	
 	\end{abstract}
 	\section{Introduction}
 	Communication in today's internet is possible by the interplay of many protocols. 
@@ -46,8 +47,8 @@
 		\begin{figure*}[ht!]
 			\begin{center}
 				\includegraphics[width=\textwidth]{pathlength.pdf}
+				\caption{\textsc{Prefix hijacking by shorter AS pathes}}
 			\end{center}
-			\caption{Prefix hijacking by shorter AS pathes}
 			\label{shortpath}
 		\end{figure*}
 		Figure \ref{shortpath} shows an example where both AS 1 and AS 6 advertise the prefix 12.34.0.0/16 but just AS 6 owns those prefixes. The autonomous systems 2 and 3 may believe the advertisements from AS 1 because of the shorter path length in comparison to AS 6.
@@ -59,8 +60,8 @@
 		\begin{figure*}[ht!]
 			\begin{center}
 				\includegraphics[scale=0.5]{deaggregation.pdf}
+				\caption{\textsc{Prefix hijacking by deaggregation}}
 			\end{center}
-			\caption{Prefix hijacking by deaggregation}
 			\label{deaggregation}
 		\end{figure*}
 		An example of deaggreation is shown in \mbox{Figure \ref{deaggregation}}. Here all other autonomous systems will relay the traffic with destination 12.34.128.0/17 to AS 1, because it anounces a more specific prefix than AS 6 which advertises a larger block of IP addresses (12.34.0.0/16).
@@ -106,7 +107,8 @@
 		
 		Current deployed solutions cannot or just partly fulfill those requirements. They focus on the protection of the underlying TCP connection, try to defensively BGP messages and atempt to setup so called routing registries. In practise, some of them improve the security of BGP but they cannot defend the system against more complex attacks. The next section describes the currently used techniques and what can actually be achieved by them. 
 
-	
+
+
 %Cryptographig techniques: 
 %	Pairwise keying
 %	Cryptographic hash functions
@@ -143,10 +145,25 @@
 		So to say, ESP in tunnel mode offers authentication of the ESP header, the original IP header, the TCP header and the payload and also encrypts the entire internet layer data including the ESP trailer. 
 
 
-		\paragraph{Summary} Summing up, IPsec is a good way to protect a session between peers. It is already widely used but it should become a standard talking about  communication between BGP routers since the more cheap countermeasures like MD5 protection or GTSM are not sufficient enough to prevent intelligent attacks.
+		\paragraph{Summary} Summing up, IPsec is a good way to protect a session between peers. It is already widely used but it should become a standard talking about  communication between BGP routers since the more cheap countermeasures like MD5 protection or GTSM are not sufficient enough to prevent intelligent attacks. Table \ref{tab:foo} shows an overview over the described methods and what can be achieved by them.
 
+\begin{table*}[t]
+\centering
+\begin{tabular}{ l c c c c }
+\toprule
+                &  Integrity   &  Confidentiality   &  Replay Prevention & DOS Prevention  \\
+\midrule
+Coutermeasaures  & yes & yes & yes & no \\
+GTSM  & no & no & no & no \\
+IPsec (AH)  & yes & no & yes & yes \\
+IPsec (ESP)  & yes & yes & yes & yes \\
+\bottomrule
+\end{tabular}
+\caption{BGP Peer Session Security Solutions - Requiremnets (Columns) relate to the guarantees provided for AS to AS peering sessions.}%TODO cite
+\label{tab:foo}
+\end{table*}
 
-       \subsection{Defensive Filtering of suspicious BGP anouncments}
+       \subsection{Defensive Filtering of suspicious BGP anouncements}
 
 		Another way to improve the security of BGP is to carrefully filter bad and potential malicious announcements.
 		Both, ingress and egress filtering is applied based on various route policies.
@@ -165,28 +182,25 @@
        \subsection{Routing Registries}
 		By being able to build and access a global view on correct routes it is easier to distinguish between valid and malicious/erroneous routes which is so far a very hard task. 
 		A global database or registry that would store the prefix and AS ownership, the connectivity between autonomous systems and also the routing policies of each AS. 	
-		When building filters a query of such a database would allow an AS to just accept routes that are in it. This process is similar to whitelisting.
+		When building filters a query of a database would allow an AS to just accept routes that are in it. This process is similar to whitelisting.
 		
+		The requirements of such a registry are accuraty, completeness and security. If attackers could manipulate data in the registry they would be able to cause even more harm if all BGP routers trusted the information stored in it. A global routing registry can be viewed as new single point of failure. 
 			
-		Problems: 
-			Such a registry has to be accurate, complete and secure
-			Routing information sometimes intendet not to be public available
-			Full trust on registry (SPoF)
-			Information may become outdated due to lazy update policies
-       		
-       
-       
-       %Securing router managment
-       %	Protection against physical attacks, SNMP attacks, DoS Attacks
-       %       => Basic security, won't mention
-       		
-       			
-	All of those described solutions are not sufficient for the protection of BGP
-
+			Also, cooperations would have to publish their routing policy, buisness relationships and topology which is often inadvertent.
+			Additionally, it is a hard task to keep a routing registry up to date. Address block allocations change with a high frequency, prefixes are sold, cooperations bust or merge with other cooperations. Those effects of those problems could be reduced by delegating the task of building a routing registry to the authorative registries. In combination with a public key infrastructure, routing registries would offer a good way to provide authenticated information about address and AS number allocations.
+		
        \section{BGP Security Solutions}
 
-       Multiple complete security architectures have been proposed to 
+		All of the so far described solutions are not a sufficient security solution for BGP because they offer just weak cryptographic protection or fail to be able to absolutely determine if a route announcement is bogus or not. Multiple complete, full scale security architectures that provide origin and topology authentication have been proposed. One of those architectures is S-BGP and will be described in the next section.
        \subsection{S-BGP}
+		\begin{figure*}[ht!]
+			\begin{center}
+				\includegraphics[scale=1.337]{sbgp.png}
+				\caption{\textsc{Route attestations in S-BGP}}
+			\end{center}
+			\label{sbgp}
+		\end{figure*}
+		
 			Validates Path attributes in BGP-Update by utilizing a PKI
 			Data like adress ownership, peer AS identiy, control messages, policy attributes and path vectors can be digitally signed and verified
 			The ownership of a prefix is checked by an out of band mechanism called Adress attestations by the validation of a delegation chain (similar to x509 PKI)
