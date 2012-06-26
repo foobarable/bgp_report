@@ -1,6 +1,7 @@
 \documentclass[12pt,a4paper]{IEEEtran}
 \usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage[numbers,sort&compress]{natbib}
 \author{Ralph Krimmel}
 \title{An overview of current BGP security problems}
 
@@ -8,25 +9,29 @@
 \begin{document}
 	\maketitle
 	\begin{abstract}
-	
+	Internet routing is a complex task because of many participating networks grouped into management domains, so called autonomous systems.
+	Those systems exchange information by making use of the Border Gateway Protocol. BGP can be considered as critical infrastructure of the internet.
+	Therefore it is crucial to secure such protocols by a strong security mechanisms. This document gives a brief overview about how BGP can be attacked and what are todays countermeasures against those attacks.
+	Also one example of a full scale security architecture, S-BGP, is introduced and discussed.
+
 	\end{abstract}
 	\section{Introduction}
 	Communication in today's internet is possible by the interplay of many protocols. 
-	On the so called internet layer the Internet Protocol \emph{IP} is the primary protocol that is used to forward network packets (datagrams) to the respective target hosts or network. 
-	IP networks are grouped as autonomous systems or in short \emph{AS}, networks under control of one organization. 
+	On the so called internet layer the Internet Protocol \emph{IP}\citep{Postel1981e} is the primary protocol that is used to forward network packets (datagrams) to the respective target hosts or network. 
+	IP networks are grouped as autonomous systems\citep{Hawkinson1996} or in short \emph{AS}, networks under control of one organization. 
 	The relaying of those packets inside or between networks is done by every host that speaks IP, but most importantly by special hosts, called routers. 
 	A router has to decide which will be the next hop the datagram has to be moved to. 
 	This can either be inside or between autonomous systems. 
 	To perform this decision, routers make use of additional protocols which are classified as \emph{intradomain routing protocols} for routing in, and \emph{interdomain routing protocols} for routing between ASes. 
 
-	The prevalent interdomain routing protocol is BGP, the \emph{Border Gateway Protocol}, or more precise \emph{Exterior Border Gateway Protocol}. 
+	The prevalent interdomain routing protocol is BGP, the \emph{Border Gateway Protocol} \citep{Rekhter1994a}, or more precise \emph{Exterior Border Gateway Protocol}. 
 	In practise BGP works basically well but the lack of security mechanisms and performance guarantees makes it vulnerable against attacks or configuration mistakes. 
-	There have been a few incidents in the past where misconfigured routers reduced the functionality of bigger parts of the internet. 
+	There have been a few incidents in the past where misconfigured routers reduced the functionality of bigger parts of the internet. \citep{Butler2010}
 	With manipulated BGP messages, even more harm could be caused if those messages are intelligently sent to specific and important targets. 
 	Therefore it is still highly important to research methods to make BGP secure, performant and reliable. 
 
 	\section{The Border Gateway Protocol}
-	The Border gateway protocol is an incremental protocol that enables border routers of adjacent autonomous systems to exchange information on how to reach blocks of IP adresses or so called \emph{IP prefixes}. 
+	The Border gateway protocol is an incremental protocol that enables border routers of adjacent autonomous systems to exchange information on how to reach blocks of IP adresses or so called \emph{IP prefixes} \citep{Butler2010}.
 	Incremental means, that BGP transfers changes of routes and not complete routing tables in every message.
 
 	Another important information that is contained in specific BGP messages is the  AS Path attribute. Each BGP router adds its AS number, the unique number each AS has, to the beginning of the path. This is done to prevent routing loops. 
@@ -35,39 +40,38 @@
 	The resulting vulnerabilitiy that results in the potential of \emph{prefix hijacking} and other flaws of BGP that can be attacked will be descriped in the next part of this document. 
 	
 	\subsection{Security issues of BGP}
-		Most of the security related problems of BGP originate from the nescience of the mapping between autonomous systems and IP prefixes, the use of TCP as Transport protocol and potential to modify route anouncements including the attributes those contain.
+		\begin{figure*}[ht!]
+			\begin{center}
+				\includegraphics[width=\textwidth]{pathlength.pdf}
+				\caption{\textsc{Prefix hijacking by shorter AS pathes \citep{Butler2010}.}}
+			\end{center}
+			\label{shortpath}
+		\end{figure*}
+		Most of the security related problems of BGP originate from the nescience of the mapping between autonomous systems and IP prefixes, the use of TCP as Transport protocol and potential to modify route anouncements including the attributes those contain \citep{Butler2010}.
 
 		\subsubsection{Prefix hijacking}
 		Because of the fact that BGP does not ensure that the originating AS, the AS that introduces a prefix into the system, has those prefixes officially allocated or reserved, attackers are able to inject malicious BGP messages. 
-		If those bogus routes are accepted by the target routers, those may select this route and redirect traffic to the attacker which offers him the possibilty to perform e.g. a \emph{Man in the middle} attack. Attackers could also just drop those datagrams which will make the destination appear to be unreachable to parts of the network that believed the malicious routes. 
+		If those bogus routes are accepted by the target routers, those may select this route and redirect traffic to the attacker which offers him the possibilty to perform e.g. a \emph{Man in the middle} attack. Attackers could also just drop those datagrams which will make the destination appear to be unreachable to parts of the network that believed the malicious routes \citep{Butler2010}.
 
 		There are several ways on how to successfully peform prefix hijacking:
 		\paragraph{Short AS path}
 		Due to the behaviour of BGP routers to select routes with short AS paths, an attacker can outperform valid anouncements by sending a shorter AS path attribute in an UPDATE message than the valid and official router would do. 
-		\begin{figure*}[ht!]
-			\begin{center}
-				\includegraphics[width=\textwidth]{pathlength.pdf}
-				\caption{\textsc{Prefix hijacking by shorter AS pathes}}
-			\end{center}
-			\label{shortpath}
-		\end{figure*}
-		Figure \ref{shortpath} shows an example where both AS 1 and AS 6 advertise the prefix 12.34.0.0/16 but just AS 6 owns those prefixes. The autonomous systems 2 and 3 may believe the advertisements from AS 1 because of the shorter path length in comparison to AS 6.
+		Figure 1 shows an example where both AS 1 and AS 6 advertise the prefix 12.34.0.0/16 but just AS 6 owns those prefixes. The autonomous systems 2 and 3 may believe the advertisements from AS 1 because of the shorter path length in comparison to AS 6.
 
 		\paragraph{Deaggregation}
 		Another possibility to hijack prefixes is to advertise more specific routes. That means that an IP router would rather prefer a route to a smaller subnet than to a big block of adresses. This behaviour is called \emph{deaggregation.} 
 		
-		%TODO In 1997  
 		\begin{figure*}[ht!]
 			\begin{center}
-				\includegraphics[scale=0.5]{deaggregation.pdf}
-				\caption{\textsc{Prefix hijacking by deaggregation}}
+				\includegraphics[width=\textwidth]{deaggregation.pdf}
+				\caption{\textsc{Prefix hijacking by deaggregation \citep{Butler2010}.}}
 			\end{center}
 			\label{deaggregation}
 		\end{figure*}
-		An example of deaggreation is shown in \mbox{Figure \ref{deaggregation}}. Here all other autonomous systems will relay the traffic with destination 12.34.128.0/17 to AS 1, because it anounces a more specific prefix than AS 6 which advertises a larger block of IP addresses (12.34.0.0/16).
+		An example of deaggreation is shown in \mbox{Figure 2}. Here all other autonomous systems will relay the traffic with destination 12.34.128.0/17 to AS 1, because it anounces a more specific prefix than AS 6 which advertises a larger block of IP addresses (12.34.0.0/16).
 		
 	       	\subsubsection{Attacks on TCP}
-		BGP routers exchange information by utilizing the Transmission Control Protocll (TCP) to construct a realiable, connection-oriented channel between each other. 
+		BGP routers exchange information by utilizing the Transmission Control Protocol \citep{Postel1981c} (TCP) to construct a realiable, connection-oriented channel between each other. 
 		TCP already offers features like retransmission, error correction, congestion and flow control. 
 		Since TCP itself does not offer a security mechanism that protects the messages confidentiality and integrity, those threats obviously exist for the communication between BGP routers. 
 		In all described techniques we consider two BGP routers named Alice and Bob. The attacker, from now on called Malice, will try to compromise the normal operation and communication of those two routers.
@@ -86,7 +90,7 @@
 		The establishment of a TCP connection is initiated with the so called three-way handshake, a sequence of TCP messages with specific flags set. It starts with a SYN packet from Alice. Bob answers this SYN with a SYN-ACK. The handshake is completed by Alice, acknowledging the SYN-ACK from Bob with an ACK.
 		Since Bob has to allocate resources when receiving a SYN from Alice, Malice could abuse this and exhaust the resources of Bob by sending alot of SYN packets without completing the handshake. This will make Bob unable to answer any further, real TCP connections. This can also lead to \emph{route flapping} which is described in the next paragraph.
 		\paragraph{Route Flapping}
-		Route flapping occurs when a router alternatly announces a route as unavailable and available again. When Malice achieves that Bob is no longer availablewith help of a DoS attack, Bobs neighbours will withdraw all routes they learned from Bob. Coming back online, Bob will advertise the routes again to all his neighbours.
+		Route flapping occurs when a router alternatly announces a route as unavailable and available again\citep{Butler2010}. When Malice achieves that Bob is no longer available with help of a DoS attack, Bobs neighbours will withdraw all routes they learned from Bob. Coming back online, Bob will advertise the routes again to all his neighbours.
 		This behaviour results in a high use of network bandwith in addition to the DoS attack. 
 
 		\subsubsection{Attack on the routing policy} 
@@ -101,28 +105,20 @@
 		By tampering around those attributes the route selection by an AS can be manipulated. 
 		For example an AS could simply shorten the AS path length by deleting a few BGP hops in the path.
 
-		%TODO examples?
        \section{BGP security today}
-		The target of BGP security research is to reach \emph{Byzantine robustness} of the protocol. That means that all non faulty hosts reach the same descision (agreement) in a finite time period (termination), even if there arey hosts that show faulty behaviour. %cite
+		The target of BGP security research is to reach \emph{Byzantine robustness} of the protocol. That means that all non faulty hosts reach the same descision (agreement) in a finite time period (termination), even if there arey hosts that show faulty behaviour \citep{Butler2010}.
 		
 		Current deployed solutions cannot or just partly fulfill those requirements. They focus on the protection of the underlying TCP connection, try to defensively BGP messages and atempt to setup so called routing registries. In practise, some of them improve the security of BGP but they cannot defend the system against more complex attacks. The next section describes the currently used techniques and what can actually be achieved by them. 
 
 
-
-%Cryptographig techniques: 
-%	Pairwise keying
-%	Cryptographic hash functions
-%	MACs
-%	Diffie-Hellmann%	PKI
-%	Certificates	
 	\subsection{Protection of a BGP Session between routers}
 		The methods that are used to protect the communication between two BGP speaking routers aim basically in protecting the underlying layers and improving BGP session security.
 
-		\paragraph{MD5 integrity} One proposal to increase the security of BGP is to utilize a TCP extension that uses a message authentication code based on MD5, a message digst algorithm. The extension would include a digest of the TCP header and the BGP message.  This protects the integrity of a TCP packet and thus also prevents replay attacks due to the included protection of TCPs sequence numbers. 
-		From performance view MD5 is a very cheap algorithm which is  not computational intensive but from security view MD5 is no longer considered as a secure message digest. %cite
+		\paragraph{MD5 integrity} One proposal to increase the security of BGP is to utilize a TCP extension that uses a message authentication code based on MD5, a message digst algorithm \citep{Metzger1995a}. The extension would include a digest of the TCP header and the BGP message.  This protects the integrity of a TCP packet and thus also prevents replay attacks due to the included protection of TCPs sequence numbers. 
+		From performance view MD5 is a very cheap algorithm which is  not computational intensive but from security view MD5 is no longer considered as a secure message digest \citep{Turner2011d}
 
 		\paragraph{Session and Message Protection}
-		The security of a BGP session can be improved by the following countermeasures, proposed by %TODO cite
+		The security of a BGP session can be improved by the following countermeasures proposed by B. Smith and J. Garcia-Luna-Aceves \citep{Smith1996a}
 		First of all, encrypting BGP data with a secret shared key ensures the confidentiality of the data. 
 		Also sequence numbers are proposed to prevent replay attacks and assures the correct order of the packets. Those sequence numbers are somehow 'authenticated' due to the prior encryption. 
 
@@ -131,14 +127,14 @@
 					       
 
 		\paragraph{Generalized TTL Security Mechanism}
-		Generalized TTL Security Mechanism (GTSM) tilizes the IP header field \emph{Time to live} that determines how many hops an IP packet will be valid before it will be dropped by a router. The idea behind this method is to just accept packets with a TTL value greater or equal the value of the maximum TTL minus one. In practise the maximum IP TTL can be 255. A packet with a TTL smaller than 254 would be dropped or may trigger a security alert. This assures that every packet originates just one hop away from the router and defends against remote attackers. The procudure does not protect against malicious information in BGP messages coming from adjacent peers. It is also less usefull in multihop environments, although it could be installed in such. For example, one BGP router could accept packets with a source three hops away. This would also allow attackers to undermine this countermeasure if they are up to three hops away. Also it is possible to encapsulate one IP packet with the maximum TTL set in another IP packet with a destination in the range of the accepted maximum hops. GTSM is a simple and cheap defense but less effective against more sophisticated attacks. 
+		Generalized TTL Security Mechanism (GTSM) tilizes the IP header field \emph{Time to live} that determines how many hops an IP packet will be valid before it will be dropped by a router. The idea behind this method is to just accept packets with a TTL value greater or equal the value of the maximum TTL minus one\citep{Gill2004}. In practise the maximum IP TTL can be 255. A packet with a TTL smaller than 254 would be dropped or may trigger a security alert. This assures that every packet originates just one hop away from the router and defends against remote attackers. The procudure does not protect against malicious information in BGP messages coming from adjacent peers. It is also less usefull in multihop environments, although it could be installed in such. For example, one BGP router could accept packets with a source three hops away. This would also allow attackers to undermine this countermeasure if they are up to three hops away. Also it is possible to encapsulate one IP packet with the maximum TTL set in another IP packet with a destination in the range of the accepted maximum hops. GTSM is a simple and cheap defense but less effective against more sophisticated attacks. 
 	
 		\paragraph{IPsec}	
 		One common approach to secure peer communications is IPsec. IPsec offers security on the network layer, making it transparent to all the overlying applications. It is a protocol that encompasses three areas: authentication, confidentiality and key management. Next to those areas IPsec also offers a mechanism to prevent replay attacks in addition to a weak defense against DoS attacks.
 
-		Three protocols are used to provide security: \emph{Authentication Header} (AH), an extension header to provide authentication and \emph{Encapsulating Security Payload} (ESP) that also encrypts next to its authentication ability. Due to the fact, that ESP offers authentication and encryption, AH is deprecated and should not longer be used in new applications. 
+		Three protocols are used to provide security: \emph{Authentication Header}\citep{Atkinson1995a} (AH), an extension header to provide authentication and \emph{Encapsulating Security Payload}\citep{Atkinson1995} (ESP) that also encrypts next to its authentication ability. Due to the fact, that ESP offers authentication and encryption, AH is deprecated and should not longer be used in new applications. 
 		
-		The third protocol called \emph{Internet Key Exchange} (IKE) is responsible for the determination and the distribution of secret keys, which could happen either manually or with an automatic on-demand protocol.
+		The third protocol called \emph{Internet Key Exchange} \citep{Sheffer2010} (IKE) is responsible for the determination and the distribution of secret keys, which could happen either manually or with an automatic on-demand protocol.
 
 		By using IPsec in the so called tunnel mode the entire original packet is being sent through a virtual tunnel beetween IP endpoints. That means that the payload, the TCP header and the original IP header are encapsulated within an ESP header and trailer and a new IP header is added. This is neccessary due to the encryption of the orginal IP header: No router inbetween could examine the inner IP header. 
 		
@@ -153,13 +149,13 @@
 \toprule
                 &  Integrity   &  Confidentiality   &  Replay Prevention & DOS Prevention  \\
 \midrule
-Coutermeasaures  & yes & yes & yes & no \\
+Countermeasaures  & yes & yes & yes & no \\
 GTSM  & no & no & no & no \\
 IPsec (AH)  & yes & no & yes & yes \\
 IPsec (ESP)  & yes & yes & yes & yes \\
 \bottomrule
 \end{tabular}
-\caption{BGP Peer Session Security Solutions - Requiremnets (Columns) relate to the guarantees provided for AS to AS peering sessions.}%TODO cite
+\caption{BGP Peer Session Security Solutions - Requiremnets (Columns) relate to the guarantees provided for AS to AS peering sessions\citep{Butler2010}.}
 \label{tab:foo}
 \end{table*}
 
@@ -168,19 +164,17 @@ IPsec (ESP)  & yes & yes & yes & yes \\
 		Another way to improve the security of BGP is to carrefully filter bad and potential malicious announcements.
 		Both, ingress and egress filtering is applied based on various route policies.
 		First of all, prefixes with special uses like loopback addresses should not be accepted. 
-		Also non allocated adresses, address blocks or AS numbers are dropped by routers that use this policy. Those so called bogons can be found in a public list that is kept up to date by the CIDR report. %TODO %cite
+		Also non allocated adresses, address blocks or AS numbers are dropped by routers that use this policy. Those so called bogons can be found in a public list that is kept up to date by the CIDR report \citep{Butler2010}.
 
-		It is also easy to filter private AS numbers. That are numbers given from upstream network providers to customers in order to allow them to communicate with them via BGP without assigning a public AS number to them. Those private AS numbers range from 64512 to 65536.
-
+		It is also easy to filter private AS numbers. That are numbers given from upstream network providers to customers in order to allow them to communicate with them via BGP without assigning a public AS number to them. Those private AS numbers range from 64512 to 65536 \citep{Hawkinson1996}.
 		In addition it may be useful to drop UPDATE messages that contain a long AS path that exceeds a threshold and routes to small subnets. The latter also prevents global routing tables to be flushed with /24 or smaller address blocks. 
 		Moreover a hard limit of announcments a neighbouring AS is permitted to advertise could be set to defend against deaggregation and memory exhaustion of routers.
-		Furthermore, an AS could defensivly alter specific BGP attributes before repropagating them. If for example an autonomous system  announces an UPDATE message with the MED attribute and the own policy is to no accept MED values, own routers could rewrite this value in all routes received form that autonomous system.
-		
+		Furthermore, an AS could defensivly alter specific BGP attributes before repropagating them. If for example an autonomous system  announces an UPDATE message with the MED attribute and the own policy is to no accept MED values, own routers could rewrite this value in all routes received form that autonomous system \citep{Butler2010}	
 		Summing up, good ingress and egress filtering can improve the security of the own AS as well as the of the  adjacent autonomous systems.
 		Filtering is a common and well utilized practise but does not replace a good security architecture because not all autonomous systems seem to filter properly by means of the best practises. If they did, the global routing system would be way more robust against disturbances. 
 
        \subsection{Routing Registries}
-		By being able to build and access a global view on correct routes it is easier to distinguish between valid and malicious/erroneous routes which is so far a very hard task. 
+       By being able to build and access a global view on correct routes it is easier to distinguish between valid and malicious/erroneous routes which is so far a very hard task \citep{Butler2010}. 
 		A global database or registry that would store the prefix and AS ownership, the connectivity between autonomous systems and also the routing policies of each AS. 	
 		When building filters a query of a database would allow an AS to just accept routes that are in it. This process is similar to whitelisting.
 		
@@ -189,28 +183,44 @@ IPsec (ESP)  & yes & yes & yes & yes \\
 			Also, cooperations would have to publish their routing policy, buisness relationships and topology which is often inadvertent.
 			Additionally, it is a hard task to keep a routing registry up to date. Address block allocations change with a high frequency, prefixes are sold, cooperations bust or merge with other cooperations. Those effects of those problems could be reduced by delegating the task of building a routing registry to the authorative registries. In combination with a public key infrastructure, routing registries would offer a good way to provide authenticated information about address and AS number allocations.
 		
-       \section{BGP Security Solutions}
+       
+			\section{BGP Security Solutions}
 
-		All of the so far described solutions are not a sufficient security solution for BGP because they offer just weak cryptographic protection or fail to be able to absolutely determine if a route announcement is bogus or not. Multiple complete, full scale security architectures that provide origin and topology authentication have been proposed. One of those architectures is S-BGP and will be described in the next section.
-       \subsection{S-BGP}
 		\begin{figure*}[ht!]
 			\begin{center}
 				\includegraphics[scale=1.337]{sbgp.png}
-				\caption{\textsc{Route attestations in S-BGP}}
+				\caption{\textsc{Route attestations in S-BGP \citep{2010}}}
 			\end{center}
 			\label{sbgp}
 		\end{figure*}
-		
-			Validates Path attributes in BGP-Update by utilizing a PKI
-			Data like adress ownership, peer AS identiy, control messages, policy attributes and path vectors can be digitally signed and verified
-			The ownership of a prefix is checked by an out of band mechanism called Adress attestations by the validation of a delegation chain (similar to x509 PKI)
-			Route attestations happen within BGP by appending a new attribute to the BGP UPDATE mesage. Each AS in the AS path signs prior signatures.
-			Problems: 
-				Huge amount of data that needs to be processed and number of possible signers makes this solution computational expensive
-				
-	\section{Conclusion}				
+		All of the so far described solutions are not a sufficient security solution for BGP because they offer just weak cryptographic protection or fail to be able to absolutely determine if a route announcement is bogus or not. Multiple complete, full scale security architectures that provide origin and topology authentication have been proposed. One of those architectures is S-BGP and will be described in the next section.
+       \subsection{S-BGP}
+       Secure-BGP adresses the previously described vulnerabilities by implementing three security mechanisms \citep{Kent2000a}. 
+		First of all, a public key infrastructure ensures the authenticy of the possession of IP adresses and AS numbers and allows router to prove that he belongs to the AS he claims to be.
+		This PKI makes use of already existing structures like internet registries. The advantage of that is that it is easy to combine the assignment of IP addresses and AS numbers under one management unit. 
+		In practise this is implemented by letting each internet registry act as a X.509 certificate authority with its root of trust at the IANA organisation. For example an organisations AS number is assigned to a public key by a certificate. Each Information emitted by an AS is signed by the private key belonging to this certificate.
+		The second feature is a mechanism that validates the path attributes by using signatures and certificates. This is called \emph{attestations}. There are two kinds of attestations in S-BGP, \emph{address attestations} and \emph{route attestations}. 
+		Address attestations verify, that a signer is the owner of a specific block of addresses, because another organization that owned those addresses delegated the block to the signer. Those attestations are generated and distributed out-of-band, that means they don't use BGP itself to transmit the information. An address attestation can be verified by following the \emph{delegation chain} up to it's root, IANA.
+		In contradiction to the address attestations, route attestations are distributed in-band of BGP. 		 To perform this, the UPDATE gains a new path attribute that allows to carry digital signatures. 
+		It is signed by every AS it passes while a route is being distributed. Figure 3 shows how this is performed in a small example with five autonomous systems. AS 1 advertises a route attestation to AS 2, signing it before. AS 2 sends this route attestation to AS 3 and AS 4, but encapsulates the entire route attestation including the identifier and the signature of AS 1 with its own signature and identifier. AS 3 and 5 continuue this procedure with AS 5 as target. The advdantage is, that now AS 5 can verify the order of traversal and the integrity of the attestation, which means that the actual path could not have been modified by an attacker.
 
+		Third, S-BGP uses IPsec to secure the integrity of BGP data and enables BGP peers to authenticate each other before exchanging information.
+		
+		While offering the broadest security guarantees, S-BGP still is not widely used. 
+		Kent et. al \citep{Kent2000a}
+		researched several reasons why S-BGP is not adopted yet. They looked at processing overhead, bandwith consumption and memory/storage usage. 
+		
+		The processing overhead can be kept low by proper caching mechanisms and a good choice of cipher algorithms. 
+		Also not a problem is the increasing transmission bandwith. The mean size of an UPDATE message in S-BGP with an average of 3.6 attestations is 450 bytes long. In comparison with the 63 bytes from a BGP UPDATE this is more than 700\% more overhead. But these numbers are still low compared to the actual traffic the routers move because those UPDATE messages are relatively rare. 
+		One real problem is the increasing amount of memory when using S-BGP because the currently by the ISPs used hardware would not be sufficient to cope with the additional memory usage \citep{Kent2000a}.
+
+		Other deployment issues are that the adoption of S-BGP must happen by several groups. ISPs, ICANN and the registration authorities would have to coordinate with each other and router vendors.
+				
+		
+	\section{Summary}				
+	BGP as the only actually used interdomain routing protocol plays a crucial role in the internet. Due to its large install base and its known vulnerabilities here is a high motivation in securing the protocol. This report showed that the classic approaches work basically well. Nevertheless, because of the fact that those currently used security countermeasures are just heuristics or use weak cryptographic algorithms, they cannot substitute the  deployment of a full scale security archticture, which is a challenging task for the future. 
 	
-	\section{Literature}
+	\bibliographystyle{apalike}
+	\bibliography{literature}
 
 \end{document}

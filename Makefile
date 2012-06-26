@@ -9,14 +9,14 @@ BIB = "literature.bib"
 show: all
 	evince ./$(FILE).pdf & 2> /dev/null
 
-all: $(PDF) $(GNUPLOT) $(INKSCAPE) 
+all: $(PDF) $(GNUPLOT) $(INKSCAPE) report.bbl
 	pdflatex --halt-on-error ./$(FILE).tex
 
-thesis.aux:
+report.aux:
 	pdflatex --halt-on-error ./$(FILE).tex
 
-#thesis.bbl: thesis.aux
-#	bibtex $(FILE)
+report.bbl: report.aux
+	bibtex $(FILE)
 
 literature.bib:
 
