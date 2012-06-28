@@ -2,21 +2,15 @@ GNUPLOT = $(addsuffix .pdf, $(basename $(wildcard *.plot)))
 INKSCAPE = $(addsuffix .pdf, $(basename $(wildcard *.svg)))
 DIRS= `find -maxdepth 1  -type d ! -wholename \*.svn\* | grep /`
 PDF = $(addsuffix .pdf, $(basename $(wildcard *.eps)))
-FILE = "report"
+FILE = "slides"
 BIB = "literature.bib"
 
 
 show: all
 	evince ./$(FILE).pdf & 2> /dev/null
 
-all: $(PDF) $(GNUPLOT) $(INKSCAPE) report.bbl
+all: $(PDF) $(GNUPLOT) $(INKSCAPE) 
 	pdflatex --halt-on-error ./$(FILE).tex
-
-report.aux:
-	pdflatex --halt-on-error ./$(FILE).tex
-
-report.bbl: report.aux
-	bibtex $(FILE)
 
 literature.bib:
 
