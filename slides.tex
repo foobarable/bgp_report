@@ -92,25 +92,41 @@
 	\frametitle{Autonomous Systems}
 
 \end{frame}
-%introduction
-%
-%importance of BGP in the internet
-%
-%Problems with BGP
-%-prefix hijacking
-%
-%-Attacks on TCP:
-%eavesdropping to learn routing information (not a BGP specific attack)
-%MITM (attacks against integrity
-%inserting, modifying deleting messages, replay attack
-%DoS attack against TCP
-%(sending RST, SYN-Flood, backhoe attack (cutting a link)
-%-Attack on the routing policy using the BGP route attributes
-%Exploiting as path length and MED to manipulate route selection by an AS
-%
-%
-%
-%BGP security today:
+
+\begin{frame}
+	\frametitle{Importance of BGP in the Internet}
+\end{frame}
+
+\section{Security issues with BGP}
+\subsection*{}
+\begin{frame}
+	\frametitle{Prefix hijacking}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Attacks on TCP}
+	
+	\begin{block}{Attacks on TCP}
+	\begin{itemize}
+		\item eavesdropping to learn routing information (not a BGP specific attack)
+		\item MITM (attacks against integrity
+		\item inserting, modifying deleting messages, replay attack
+		\item DoS attack against TCP
+		\item (sending RST, SYN-Flood, backhoe attack (cutting a link)
+	\end{itemize}
+	\end{block}
+
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Attack on the routing policy}
+	%Exploiting as path length and MED to manipulate route selection by an AS
+\end{frame}
+
+
+\section{BGP security today}
+\subsection*{}
 %target: byzantine robustness
 %Currently used: Protection of the TCP connection and defensive filtering
 %
@@ -124,10 +140,26 @@
 %% PKI
 %% Certificates
 %
-%
-%Protection of a BGP Session between routers
-%2 goals: Protecting TCP and BGP session itself
-%Proposed solutions:
+
+\begin{frame}
+	\frametitle{Protection of a BGP Session between routers}
+	%2 goals: Protecting TCP and BGP session itself
+\end{frame}
+
+
+
+\begin{frame}
+	\frametitle{Proposed solutions}
+	\begin{block}{Countermeasures}
+	\begin{itemize}
+		\item MD5 Integrity
+		\item Session and Message Protection
+		\item Generalized TTL Securiy Mechanism
+		\item IPsec
+	\end{itemize}
+	\end{block}
+
+\end{frame}
 %MD5 integrity: Utilize TCP extension that uses a MAC based on MD5
 %-> Protects integrity and prevents replay attacks
 %
@@ -159,7 +191,9 @@
 %
 %
 %
-%Defensive Filtering of suspicious BGP anouncments
+
+\section{Defensive Filtering BGP anouncments}
+\subsection*{}
 %Goal: Filter bad and potential malicious announcmentce
 %Usually ingress and egress filtering based on route policies like:
 %prefixes with special uses
