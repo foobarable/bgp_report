@@ -86,20 +86,94 @@
 \subsection*{}
 
 \begin{frame}{Routing in the Internet}
+	\begin{block}{The Internet}
+	\begin{itemize}
+		\item Large, decentralized Network %of smaller networks
+		\item Intermediate hosts: Routers
+		\item Internet protocol
+	\end{itemize}
+\end{block}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Some definitions}
+	\begin{block}{IP Addresses}
+	\begin{itemize}
+		\item IP Address: 32(v4)/128(v6) bit Numbers
+		\item E.g.: Host: 134.76.80.1  Subnet: 134.76.80.0/24
+		\item IP Prefix: Block of IP addresses
+	\end{itemize}
+	\end{block}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Some definitions \#2}
+	\begin{block}{Autonomous Systems}
+	\begin{itemize}
+		\item Collection of IP prefixes under control of one organisation
+		\item Identified by \emph{AS Number}
+			\begin{itemize}
+				\item Public: 1-64511
+				\item Private: 64512-65535 
+			\end{itemize}
+		\item Exchange routing information with adjacent autonomous systemss% on how to reach specific blocks of Prefixes
+	\end{itemize}
+	\end{block}
+	
 \end{frame}
 
 \begin{frame}
 	\frametitle{BGP}
+	\begin{block}{BGP Basics}
+		\begin{itemize}
+
+			\item Incremental protocol
+			\item 4 Message Types
+				\begin{itemize}
+					\item Open: Session initiation
+					\item \textbf{Update}: Advertisement/withdrawal of routes
+					\item Notification: Session termination
+					\item Keepalive: Verification of reachability
+				\end{itemize} 
+	%	\item Path-Vector Protocol
+		\end{itemize}
+	\end{block}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{BGP Update Message}
+	\begin{block}{Important attributes}
+	\begin{itemize}
+		\item Next hop: Destination of the next hop router   
+		\item AS-Path: Path with AS-Numbers leading to prefix 
+		\item Several attributes for path selection (MED, Origin, Local preference)
+	\end{itemize}
+	\end{block}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Autonomous Systems}
-
+	\frametitle{Path selection}
+	
+	\begin{block}{Decision factors}
+	\begin{enumerate}
+		\item Local preference 
+		\item Shortest AS path length
+		\item Lowest origin value
+		\item Lowest MED value
+		\item ...
+	\end{enumerate}
+	\end{block}
 \end{frame}
 
-\begin{frame}
-	\frametitle{Importance of BGP in the Internet}
+\begin{frame}{Example}
+	\begin{center}
+		\includegraphics[width=\textwidth]{example.pdf}
+	\end{center}	
 \end{frame}
+
 
 \section{Security issues of BGP}
 \subsection*{}
@@ -131,50 +205,53 @@
 	
 	\begin{block}{Attacks on TCP}
 	\begin{itemize}
-		\item eavesdropping to learn routing information (not a BGP specific attack)
-		\item MITM (attacks against integrity
-		\item inserting, modifying deleting messages, replay attack
-		\item DoS attack against TCP
-		\item (sending RST, SYN-Flood, backhoe attack (cutting a link)
+		\item Eavesdropping to learn routing information
+		\item MITM: Insertion, modification and deletion of messages
+		\item Replay attack
+		\item DoS attacks (via RST, SYN-Flood)
 	\end{itemize}
 	\end{block}
-
 \end{frame}
 
-
-\begin{frame}
-	\frametitle{Attack on the routing policy}
-	%Exploiting as path length and MED to manipulate route selection by an AS
-\end{frame}
 
 \section{Cryptographic techniques}
 \subsection*{}
+
+
 \begin{frame}{Cryptographig techniques}
-\begin{itemize}
-	\item Pairwise keying
-	\item Cryptographic hash functions
-	\item MACs
-	\item PKI
-	\item Certificates
-\end{itemize}
+	\begin{block}{Some techniques}
+	\begin{itemize}
+		\item Pairwise keying %shared secret
+		\item Cryptographic hash functions (message digests) %\item Create fixed length output for variable input
+		\begin{itemize} 
+			\item Non-invertible
+			\item Collision resistant
+		\end{itemize}
+		\item Message Authentication Code: digest(Shared key + Message) 
+	\end{itemize}
+	\end{block}
 \end{frame}
 
 \section{BGP security today}
 \subsection*{}
-%target: byzantine robustness
-\begin{frame}
-	Current approaches: 
+
+\begin{frame}{BGP security today}
+	\begin{block}{Current approaches}
 	\begin{itemize}
-		\item Protection of the BGP sesseion between routers
+		\item Protection of the BGP session between routers
 		\item Defensive filtering
 	\end{itemize}
+	\end{block}
 \end{frame}
-
-\section{Session defense}
 
 \begin{frame}
 	\frametitle{Protection of a BGP Session between routers}
-	2 goals: Protecting TCP and BGP session itself
+	\begin{block}{Two goals}
+	\begin{itemize}
+		\item Protecting TCP 
+		\item BGP session itself
+	\end{itemize}
+	\end{block}
 \end{frame}
 
 
@@ -188,92 +265,156 @@
 		\item IPsec
 	\end{itemize}
 	\end{block}
-
 \end{frame}
 
 
 \begin{frame}{MD5 Integrity}
-	
-%MD5 integrity: Utilize TCP extension that uses a MAC based on MD5
-%-> Protects integrity and prevents replay attacks
-%
+	\begin{block}{Idea}
+	\begin{itemize}
+		\item TCP extension that uses a MAC based on MD5
+		\item Carries MAC of TCP header and BGP data
+	\end{itemize}
+	\end{block}
+	$\Rightarrow$ Protects integrity and prevents replay attacks
+%%
 \end{frame}
-
-\begin{frame}{Session and Message Protection}
-%5 Proposed countermeasures:
-%Adding sequence numbers
-%Encryption of all BGP data between peers (shared secret)
 %
-%Adding UPDATE sequence numbers/timestamp
-%New path attribute: PREDECESSOR: identification of last AS before destination
-%digital signatures of all UPDATE fields
-%Disadvantages: BGP needs to be altered
-%Based on shared secrets => hard to manage huge number of keypairs
+\begin{frame}{Session and Message Protection}
+	\begin{block}{Proposed countermeasures}
+	\begin{itemize}
+		\item Adding sequence numbers
+		\item Encryption of all BGP data between peers %shared secret
+		\item Digital signatures of all UPDATE fields 
+		%\item New path attribute: PREDECESSOR % identification of last AS before destination
+	\end{itemize}
+	\end{block}
+	Disadvantages: BGP needs to be altered, based on shared keys
 \end{frame}
 
 \begin{frame}{Generalized TTL Security Mechanism}
-	Utilizing IP TTL to discard every packet with TTL < MAX-1.
-	V%=> Weakly defends against remote attacker, but not against malicious information coming from adjacent peers
+	
+	\begin{block}{Idea}
+	\begin{itemize}
+		\item IP header contains a TTL field 
+		\item TTL decreased with every hop
+		\item Utilize IP TTL to discard every packet with TTL $< 254$.
+		\item Cheap solution
+		\item Weakly defends against remote attacker
+	\end{itemize}
+	\end{block}
+	%\begin{center}
+%		\includegraphics[scale=0.3]{ttl.jpg}
+%	\end{center}
+	%=> Weakly defends against remote attacker, but not against malicious information coming from adjacent peers
 	%=> Also, useless in multihop environments
 \end{frame}
-
+%
 \begin{frame}{IPsec}
-%Use IPsec to secure BGP at IP layer
-%IKE for key management, AH and ESP for packet level security
-%Typically used to secure messages between peers
-%Provides: authenticy, integrity, replay prevention, confidentality, DOS prevention
+	\begin{block}{IPsec overview}
+	\begin{itemize}
+		\item IP layer protocol
+		\item Three protocols: IKE (Key Managment, AH and ESP (packet level security)
+		\item Provides: authenticy, integrity, replay prevention, confidentality, DOS prevention
+		\item Widely used for securing BGP sessions
+	\end{itemize}
+	\end{block}
 \end{frame}
-
+%
 \section{Defensive Filtering}
 \subsection*{}
-%Goal: Filter bad and potential malicious announcmentce
+
+\begin{frame}{Defensive Filtering}
+	Goal: Filter bad and potential malicious announcements
+\end{frame}
+\begin{frame}
 %Usually ingress and egress filtering based on route policies like:
-%prefixes with special uses
-%bogons/martians (advertisements of adress blocks and AS numbers with no matching allocation data)
-%=> filtering using an updated list of bogons
-%filter out private AS numbers
-%too long AS-Pathes
-%routes to small soubnets (snm > 24)
-%hard limit of announcments by a neighbour
-%filtering by customer policies
-%Rewrite of BGP attributes
-%
-%=> Filtering works basically well in practise but can not replace a strong security architecture
-%
-%
-%
-%All of those described solutions are not sufficient for the protection of BGP
-%
-%
-%
+	\begin{block}{Route policies}
+\begin{itemize}
+	\item Prefixes with special uses
+	\item Bogons %(Advertisements of address blocks and AS numbers with no matching allocation data, Black list needed
+	\item Private AS numbers
+	\item Long AS-Pathes
+	\item Routes to small networks (Deaggreation prevention)
+	\item Limit of announcements by a neighbour (DoS and Deaggreation prevention)
+	\item Rewrite of BGP attributes
+\end{itemize}
+\end{block}
+%%=> Filtering works basically well in practise but can not replace a strong security architecture
+\end{frame}
+
 \section{S-BGP}
 \subsection*{}
+\begin{frame}{S-BGP}
+	\begin{block}{S-BGP overview}
+		\begin{itemize}
+			\item Full scale security architecture
+			\item Installs PKI, parallel to existing allocation and delegation systems
+			\item BGP data can be signed and verified
+			\item IPsec to secure peer sessions
+			\item Two kind of attestations: Address and route attestations
+		\end{itemize}
+	\end{block}
+\end{frame}
 
-%
-%BGP Security Solutions
-%
-%
+
+\begin{frame}{Address attestations}
+%The ownership of a prefix is checked by an out of band mechanism called Adress attestations by the validation of a delegation chain (similar to x509 PKI)
+	\begin{block}{Address attestations}
+	\begin{itemize}
+		\item Out-of-band mechanism
+		\item Verification of the ownership of prefixes via certificates
+		\item Delegation chain, similar to x.509 PKI
+	\end{itemize}
+	\end{block}
+
+\end{frame}
+
+\begin{frame}{Route attestations}
+	\begin{block}{Route attestations}
+	\begin{itemize}
+		\item Distributed via BGP
+		\item Update messages can carry digital signatures %those authenticate an autonomous system
+		\item Each AS in the path signes the path recursively 
+	\end{itemize}
+	\end{block}
+\end{frame}
+
 \begin{frame}{Route attestations}
 			\begin{center}
 				\includegraphics[scale=1.337]{sbgp.png}
 			\end{center}
 \end{frame}
-%S-BGP
-%Validates Path attributes in BGP-Update by utilizing a PKI
-%Data like adress ownership, peer AS identiy, control messages, policy attributes and path vectors can be digitally signed and verified
-%The ownership of a prefix is checked by an out of band mechanism called Adress attestations by the validation of a delegation chain (similar to x509 PKI)
-%Route attestations happen within BGP by appending a new attribute to the BGP UPDATE mesage. Each AS in the AS path signs prior signatures.
-%Problems:
-%Huge amount of data that needs to be processed and number of possible signers makes this solution computational expensive
-%
-%
-%
-%Secure Origin BGP
-%
-%
-%
 
 
+\begin{frame}{Deployment issues}
+	
+	\begin{itemize}
+		\item S-BGP needs more memory
 
+		\item Alot of parties have to work together (IANA/ICANN)/ISPs/Router vendors
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Summary}
+	\begin{block}{Summary}
+	\begin{itemize}
+	\item BGP plays a large role in in internet routing
+	\item BGP is vulnerable at many places
+	\item Several existing practises to defend against threads
+	\item Existing solutions are hard to deploy
+	\end{itemize}
+	\end{block}
+\end{frame}
+
+\begin{frame}
+	\begin{center}
+	\large Questions?
+\end{center}
+	\begin{center}
+	\includegraphics[scale=0.8]{questions.jpg}
+	\end{center}
+\end{frame}
 \end{document}
+
 
